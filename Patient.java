@@ -34,6 +34,7 @@ public class Patient implements Runnable {
         System.out.println("P" + patientId + " arrived.");
     }
 
+    
     // Print waiting outside message when the room is full
     public void waitOutside() {
         System.out.println("The waiting room is full.");
