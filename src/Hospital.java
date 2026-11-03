@@ -44,6 +44,11 @@ public class Hospital {
     public void createPatients() {
         for (int i = 1; i <= numberOfPatients; i++) {
             new Thread(new Patient(i, this)).start();
+            try {
+                Thread.sleep(100); // Stagger arrivals so they print in order (P1, P2, P3...)
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
@@ -53,7 +58,7 @@ public class Hospital {
         }
     }
 
-    // --- SHARED QUEUE OPERATIONS ---
+    // --- SHARED QUEUE OPERATSystem.outNS ---
 
     public void addPatientToQueue(Patient patient) {
         mutex.acquire(); // Lock the queue
@@ -76,6 +81,15 @@ public class Hospital {
 
     public synchronized void incrementPatientsFinished() {
         patientsFinished++;
+        if (patientsFinished == numberOfPatients) {
+            System.out.println("All patients have been treated.");
+            System.out.println("Simulation completed.");
+            
+            // Wake up any waiting doctor threads so they can exit their loops
+            for (int i = 0; i < numberOfDoctors; i++) {
+                patientsAvailable.release();
+            }
+        }
     }
 
     public synchronized int getPatientsFinishedCount() {
