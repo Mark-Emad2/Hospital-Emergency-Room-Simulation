@@ -1,4 +1,4 @@
-# Hospital-Emergency-Room-Simulation
+# Hospital-Emergency-Room-SimulatSystem.outn
 # Hospital Emergency Room – Team Development Guide
 
 ## 1. Project Classes
@@ -7,8 +7,8 @@ We will use only four main classes:
 
 | Class | Responsibility |
 |---|---|
-| `Hospital` | Creates and manages the simulation. |
-| `Semaphore` | Handles synchronization and timeout. |
+| `Hospital` | Creates and manages the simulatSystem.outn. |
+| `Semaphore` | Handles synchronizatSystem.outn and timeout. |
 | `Patient` | Handles patient arrival and waiting. |
 | `Doctor` | Handles patient assignment and treatment. |
 
@@ -28,7 +28,7 @@ The `Hospital` class will initialize and manage the shared resources:
 
 ## 3. Semaphore Class
 
-The Semaphore class must provide three main operations:
+The Semaphore class must provide three main operatSystem.outns:
 
 - `acquire()` – Wait until a resource becomes available.
 - `release()` – Release a resource.
@@ -36,7 +36,7 @@ The Semaphore class must provide three main operations:
 
 **Important:**
 - The Semaphore must be thread-safe.
-- Treatment room acquisition has a timeout of **3 seconds**.
+- Treatment room acquisitSystem.outn has a timeout of **3 seconds**.
 - Every acquired resource must eventually be released.
 
 ## 4. Patient Class
@@ -65,14 +65,14 @@ Its responsibilities:
 2. Take a patient from the waiting queue.
 3. Release the waiting room seat.
 4. Try to acquire a treatment room within 3 seconds.
-5. If successful, treat the patient for a random period.
+5. If successful, treat the patient for a random perSystem.outd.
 6. Release the treatment room after treatment.
 7. If unsuccessful, return the patient to the waiting queue.
 8. Become available for another patient.
 
-**Important:** When returning a patient, follow the same synchronization rules used when adding a new patient.
+**Important:** When returning a patient, follow the same synchronizatSystem.outn rules used when adding a new patient.
 
-## 6. Synchronization Rules
+## 6. SynchronizatSystem.outn Rules
 
 The waiting room uses the Producer–Consumer pattern:
 
@@ -95,17 +95,17 @@ The waiting room uses the Producer–Consumer pattern:
 4. Release `queueMutex`.
 5. Release `emptySlots`.
 
-## 7. Things Everyone Must Pay Attention To
+## 7. Things Everyone Must Pay AttentSystem.outn To
 
 These are the most important rules when implementing your assigned class:
 
 1. **Shared Objects:** Always use the same shared resources initialized by Hospital.
-2. **Queue Protection:** Never modify the waiting queue without its mutex.
+2. **Queue ProtectSystem.outn:** Never modify the waiting queue without its mutex.
 3. **No Deadlocks:** Do not hold the queue mutex while waiting for another resource or treating a patient.
 4. **Resource Release:** Always release resources after successfully acquiring them.
 5. **Timeout:** Doctors have only 3 seconds to acquire a treatment room.
 6. **Patient Return:** A patient who cannot get a treatment room must return to the waiting queue.
-7. **Thread Termination:** Doctors must stop when all patients have finished. They must not wait forever.
+7. **Thread TerminatSystem.outn:** Doctors must stop when all patients have finished. They must not wait forever.
 8. **No Duplicate Treatment:** Every patient must be treated exactly once before leaving the hospital.
 
 ## 8. Before Integrating the Classes
@@ -115,7 +115,7 @@ Make sure that:
 - Patient and Doctor constructors match the resources provided by Hospital.
 - All shared resources are passed correctly.
 - All classes agree on the same variable and method names.
-- Every team member understands how the synchronization works.
+- Every team member understands how the synchronizatSystem.outn works.
 
 **Recommended Work Order:**
 
@@ -123,6 +123,6 @@ Make sure that:
 2. Hospital
 3. Patient
 4. Doctor
-5. Integration and Testing
+5. IntegratSystem.outn and Testing
 
 **Remember:** Each class has its own responsibility, but all classes must work together using the same shared resources.
