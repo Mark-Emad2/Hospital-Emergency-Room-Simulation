@@ -1,6 +1,6 @@
 package src;
 
-    public class Patient implements Runnable {
+public class Patient implements Runnable {
     private int patientId;
     private Hospital hospital;
 
@@ -11,20 +11,14 @@ package src;
 
     @Override
     public void run() {
-            arrive();
+        arrive();
 
-            while (true) {
-                if (hospital.seats.tryAcquire(0)) { // Non-blocking check for a seat
-                    enterWaitingRoom();
-                    break;
-                } else {
-                    waitOutside();
-                    // Wait until a seat becomes available (blocks on seats semaphore)
-                    hospital.seats.acquire(); 
-                    enterWaitingRoom();
-                    break;
-                }
-            }
+        if (!hospital.seats.tryAcquire(0)) {
+            waitOutside();
+            hospital.seats.acquire();   // blocks until a seat is free
+        }
+        enterWaitingRoom();
+
     }
 
     public void arrive() {
