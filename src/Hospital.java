@@ -1,7 +1,5 @@
 package src;
 
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Scanner;
 
 public class Hospital {
@@ -10,19 +8,10 @@ public class Hospital {
     private int numberOfDoctors;
     private int numberOfPatients;
 
-    private Queue<Patient> waitingRoomQueue;
-
-    // Semaphores
-    public Semaphore seats;
-    public Semaphore patientsAvailable;
-    public Semaphore treatmentRooms;
-    public Semaphore mutex;
+    private WaitingRoom waitingRoom;
+    private TreatmentRoom treatmentRoom;
 
     private int patientsFinished = 0;
-
-    public Hospital() {
-        waitingRoomQueue = new LinkedList<>();
-    }
 
     public void readInput() {
         Scanner input = new Scanner(System.in);
@@ -35,10 +24,8 @@ public class Hospital {
     }
 
     public void initializeHospital() {
-        seats = new Semaphore(waitingRoomCapacity);
-        patientsAvailable = new Semaphore(0);
-        treatmentRooms = new Semaphore(2);   // PDF: exactly 2 treatment rooms
-        mutex = new Semaphore(1);
+        waitingRoom = new WaitingRoom(waitingRoomCapacity);
+        treatmentRoom = new TreatmentRoom(2);
     }
 
     public void createPatients() {
@@ -46,7 +33,7 @@ public class Hospital {
         for (int i = 1; i <= numberOfPatients; i++) {
             new Thread(new Patient(i, this)).start();
             try {
-                Thread.sleep(100); // stagger arrivals so P1, P2, ... print in order
+                Thread.sleep(100); // stagger arrivals
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -59,39 +46,12 @@ public class Hospital {
         }
     }
 
-    // --- SHARED QUEUE OPERATIONS ---
-
-    public Patient assignNextPatient(int doctorID) {
-        Patient p = null;
-        mutex.acquire();
-        if (!waitingRoomQueue.isEmpty()) {
-            p = waitingRoomQueue.poll();
-            System.out.println("Doctor " + doctorID + " is assigned to P" + p.getPatientId() + ".");
-        }
-        mutex.release();
-        return p;
+    public WaitingRoom getWaitingRoom() {
+        return waitingRoom;
     }
 
-    public void addPatientToQueue(Patient patient) {
-        mutex.acquire();
-        waitingRoomQueue.add(patient);
-        mutex.release();
-
-        // Signal a doctor that a patient is available
-        patientsAvailable.release();
-    }
-
-    public void reenterWaitingRoom(Patient patient) {
-        // Try to grab a seat without blocking, so we print the "full"
-        // message only when it actually applies.
-        if (!seats.tryAcquire(0)) {
-            System.out.println("The waiting room is full.");
-            System.out.println("P" + patient.getPatientId()
-                    + " is waiting outside for an available seat.");
-            seats.acquire();   // block until a seat frees up
-        }
-        System.out.println("P" + patient.getPatientId() + " entered the waiting room.");
-        addPatientToQueue(patient);
+    public TreatmentRoom getTreatmentRoom() {
+        return treatmentRoom;
     }
 
     public synchronized void incrementPatientsFinished() {
@@ -101,7 +61,7 @@ public class Hospital {
             System.out.println("Simulation completed.");
 
             for (int i = 0; i < numberOfDoctors; i++) {
-                patientsAvailable.release();
+                waitingRoom.patientsAvailable.release();
             }
         }
     }
@@ -120,7 +80,6 @@ public class Hospital {
 
         createPatients();
 
-        // Small delay to let patients arrive before doctors start
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {

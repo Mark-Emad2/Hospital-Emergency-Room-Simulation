@@ -13,12 +13,12 @@ public class Patient implements Runnable {
     public void run() {
         arrive();
 
-        if (!hospital.seats.tryAcquire(0)) {
+        WaitingRoom waitingRoom = hospital.getWaitingRoom();
+        if (!waitingRoom.tryAcquireSeat(0)) {
             waitOutside();
-            hospital.seats.acquire();   // blocks until a seat is free
+            waitingRoom.acquireSeat();
         }
         enterWaitingRoom();
-
     }
 
     public void arrive() {
@@ -27,7 +27,7 @@ public class Patient implements Runnable {
 
     public void enterWaitingRoom() {
         System.out.println("P" + patientId + " entered the waiting room.");
-        hospital.addPatientToQueue(this);
+        hospital.getWaitingRoom().addPatient(this);
     }
 
     public void waitOutside() {

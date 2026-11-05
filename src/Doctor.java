@@ -4,7 +4,6 @@ import java.util.Random;
 
 public class Doctor implements Runnable {
     int doctorID;
-    Semaphore waitingRoom, treatmentRooms;
     Hospital hospital;
     private Random random = new Random();
 
@@ -14,41 +13,41 @@ public class Doctor implements Runnable {
     }
 
     public void run() {
+        WaitingRoom waitingRoom = hospital.getWaitingRoom();
+        TreatmentRoom treatmentRoom = hospital.getTreatmentRoom();
 
         while (hospital.getPatientsFinishedCount() < hospital.getTotalPatients()) {
             try {
+                waitingRoom.patientsAvailable.acquire();
 
-                hospital.patientsAvailable.acquire();
-
-                Patient patient = hospital.assignNextPatient(doctorID);
+                Patient patient = waitingRoom.assignNextPatient(doctorID);
                 if (patient == null) {
                     continue;
                 }
 
-                hospital.seats.release();
                 System.out.println("Doctor " + doctorID + " is trying to acquire a treatment room");
 
-                boolean acquired = hospital.treatmentRooms.tryAcquire(3000);
+                boolean acquired = treatmentRoom.tryAcquire(3000);
 
                 if (!acquired) {
                     System.out.println("Doctor " + doctorID + " could not acquire a treatment room");
                     System.out.println("Doctor " + doctorID + " is sending P" + patient.getPatientId()
                             + " back to the waiting room");
 
-                    hospital.reenterWaitingRoom(patient);
+                    waitingRoom.reenterWaitingRoom(patient);
                     continue;
                 }
 
-                // Treatment room acquired -> begin treatment
                 System.out.println("Doctor " + doctorID + " acquired a treatment room");
                 System.out.println("Doctor " + doctorID + " begins treating P" + patient.getPatientId());
+                waitingRoom.releaseSeat();
 
-                Thread.sleep(1000 + random.nextInt(2000));
+                Thread.sleep(2000 + random.nextInt(3000));
 
                 System.out.println("Doctor " + doctorID + " finished treating P" + patient.getPatientId());
                 System.out.println("Doctor " + doctorID + " released the treatment room");
                 System.out.println("Doctor " + doctorID + " is now available.");
-                hospital.treatmentRooms.release();// FIX: always print, and BEFORE "Pn left"
+                treatmentRoom.release();
 
                 System.out.println("P" + patient.getPatientId() + " left.");
                 hospital.incrementPatientsFinished();
